@@ -5,8 +5,14 @@ export const getAllTasks = async (req, res, next) => {
   res.json(results.rows)
 }
 
-export const getTask = (req, res) => {
-  res.send('obteniendo tarea unica')
+export const getTask = async (req, res) => {
+  const { id } = req.params;
+  const result = await pool.query('SELECT * FROM task WHERE id = $1', [id])
+  if(!result.rowCount) {
+    return res.status(404).json({message:'La tarea no existe'})
+  }
+
+  return res.json(result.rows[0])
 }
 
 export const createTask = async (req, res, next) => {
@@ -30,6 +36,13 @@ export const updateTask = (req, res) => {
   res.send('modificando tarea')
 }
 
-export const deleteTask = (req, res) => {
-  res.send('eliminando tarea')
+export const deleteTask = async (req, res) => {
+  const { id } = req.params
+  const result = await pool.query('DELETE FROM task WHERE id = $1 RETURNING *', [id])
+  console.log(result);
+  if(!result.rowCount) {
+    return res.status(404).json({message: 'La tarea no existe'})
+  }
+
+  return res.sendStatus(204)
 }
