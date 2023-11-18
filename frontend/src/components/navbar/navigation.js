@@ -1,4 +1,4 @@
-export const navigation = [
+export const publicRoutes = [
   {
     name: 'About',
     path: '/about'
@@ -10,7 +10,10 @@ export const navigation = [
   {
     name: 'Register',
     path: '/register'
-  },
+  }
+]
+
+export const privateRoutes = [
   {
     name: 'Tasks',
     path: '/tasks'

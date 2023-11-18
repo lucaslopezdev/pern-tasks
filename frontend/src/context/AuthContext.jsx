@@ -35,19 +35,23 @@ export function AuthProvider({ children }) {
 const signin = async(data) => {
     try {
       const res = await axios.post('/signin', data)
-    console.log(res.data)
     setIsAuth(true)
     setUser(res.data)
 
     return res.data
     } catch (error) {
-      console.log(error);
       if(Array.isArray(error.response.data)) {
         return setErrors(error.response.data)
       }
 
       setErrors([error.response.data.message])
     }
+  }
+
+  const logout = async () => {
+    await axios.post('/logout')
+    setUser(null)
+    setIsAuth(false)
   }
 
   useEffect(() => {
@@ -65,7 +69,7 @@ const signin = async(data) => {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isAuth, errors, signup, signin }}>
+    <AuthContext.Provider value={{ user, isAuth, errors, signup, signin, logout }}>
       {children}
     </AuthContext.Provider>
   )
