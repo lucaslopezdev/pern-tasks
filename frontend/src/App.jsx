@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Outlet } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import LoginPage from './pages/LoginPage'
@@ -12,9 +12,15 @@ import { useAuth } from './context/AuthContext'
 import Navbar from './components/navbar/Navbar'
 import { Container } from './components/ui'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { TaskProvider } from './context/TaskContext'
 
 function App() {
-  const { isAuth } = useAuth()
+  const { isAuth, loading } = useAuth()
+
+  console.log(loading);
+  if (loading) {
+    return <h1>Cargando...</h1>
+  }
 
   return (
     <>
@@ -34,9 +40,18 @@ function App() {
           <Route
             element={<ProtectedRoute isAllowed={isAuth} redirectTo='/login' />}
           >
-            <Route path='/tasks' element={<TasksPage />} />
-            <Route path='/tasks/new' element={<TaskFormPage />} />
-            <Route path='/tasks/:id/edit' element={<TaskFormPage />} />
+            <Route
+              element={
+                <TaskProvider>
+                  <Outlet />
+                </TaskProvider>
+              }
+            >
+              <Route path='/tasks' element={<TasksPage />} />
+              <Route path='/tasks/new' element={<TaskFormPage />} />
+              <Route path='/tasks/:id/edit' element={<TaskFormPage />} />
+            </Route>
+
             <Route path='/profile' element={<ProfilePage />} />
           </Route>
 

@@ -1,22 +1,27 @@
-import { useEffect, useState } from "react"
-import { getTaskList } from "../api/tasks.api"
-import TaskCard from "../components/tasks/TaskCard"
+import { useEffect } from "react";
+import TaskCard from "../components/tasks/TaskCard";
+import { useTasks } from "../context/TaskContext";
 
-function TasksPage () {
-  const [tasks, setTasks] = useState([])
+function TasksPage() {
+  const { tasks, loadTasks } = useTasks();
 
   useEffect(() => {
-    getTaskList()
-    .then(res => setTasks(res.data))
-  }, [])
-  
-  return(<div className="grid grid-cols-3 gap-2">
-    {
-      tasks.map(({id, title, description}) => (
-        <TaskCard key={id} title={title} description={description} />
-      ))
-    }
-  </div>)
+    loadTasks();
+  }, []);
+
+  if (tasks.length === 0) return (
+    <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+      <h1 className="text-3xl font-bold">No tasks found</h1>
+    </div>
+  )
+
+  return (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2">
+      {tasks.map((task) => (
+        <TaskCard task={task} key={task.id} />
+      ))}
+    </div>
+  );
 }
 
-export default TasksPage
+export default TasksPage;

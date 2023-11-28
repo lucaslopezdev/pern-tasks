@@ -1,35 +1,58 @@
 import { Card, Input, Textarea, Label, Button } from '../components/ui'
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
-import {createTaskRequest} from '../api/tasks.api'
-import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useTasks } from '../context/TaskContext'
 
 function TaskFormPage() {
   const [postError, setPostError] = useState(null)
 
+  const { createTask, updateTask, loadTask, errors: taskErrors } = useTasks()
+  console.log(taskErrors)
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm()
 
   const navigate = useNavigate()
 
   const onSubmit = handleSubmit(async (data) => {
-    try {
-    await createTaskRequest(data)
-    navigate('/tasks')
-    } catch (error) {
-      if(error.response){
-        setPostError(error.response.data.message)
-      }
+    let task;
+    if (!id) {
+      task = await createTask(data)
+    } else {
+      task = await updateTask(id, data)
+    }
+    console.log(task)
+    if (task) {
+      navigate('/tasks')
     }
   })
+
+  const { id } = useParams()
+
+  useEffect(() => {
+    if (id) {
+      loadTask(id).then((task) => {
+        setValue('title', task.title)
+        setValue('description', task.description)
+      })
+    }
+  }, [])
 
   return (
     <div className='flex h-[80vh] justify-center items-center'>
       <Card>
-        <h2 className='text-3xl font-bold my-4'>Create Task</h2>
+        {taskErrors.map((error, i) => (
+          <p key={i} className='text-red-500'>
+            {error}
+          </p>
+        ))}
+        <h2 className='text-3xl font-bold my-4'>
+          {id ? 'Edit Task' : 'Create Task'}
+        </h2>
 
         <form onSubmit={onSubmit}>
           {postError && <span className='text-red-500'>{postError}</span>}
@@ -42,7 +65,9 @@ function TaskFormPage() {
               required: true
             })}
           />
-          {errors.title && <span className='text-red-500'>El título es requerido</span>}
+          {errors.title && (
+            <span className='text-red-500'>El título es requerido</span>
+          )}
           <Label htmlFor='description'>Description</Label>
           <Textarea
             id='description'
@@ -51,7 +76,7 @@ function TaskFormPage() {
             {...register('description')}
           ></Textarea>
 
-          <Button>Create</Button>
+          <Button>{id ? 'Edit' : 'Create'}</Button>
         </form>
       </Card>
     </div>

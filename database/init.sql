@@ -16,3 +16,6 @@ CREATE TABLE users(
 );
 
 ALTER TABLE users ADD COLUMN gravatar VARCHAR(255);
+
+-- remove unique from title
+ALTER TABLE task DROP CONSTRAINT task_title_key;

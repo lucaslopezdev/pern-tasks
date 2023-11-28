@@ -16,31 +16,32 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isAuth, setIsAuth] = useState(false)
   const [errors, setErrors] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const signup = async(data) => {
+  const signup = async (data) => {
     try {
       const res = await axios.post('/signup', data)
-    setUser(res.data)
-    setIsAuth(true)
+      setUser(res.data)
+      setIsAuth(true)
 
-    return res.data
+      return res.data
     } catch (error) {
-      if(Array.isArray(error.response.data)) {
+      if (Array.isArray(error.response.data)) {
         return setErrors(error.response.data)
       }
       return setErrors([error.response.data.message])
     }
   }
 
-const signin = async(data) => {
+  const signin = async (data) => {
     try {
       const res = await axios.post('/signin', data)
-    setIsAuth(true)
-    setUser(res.data)
+      setIsAuth(true)
+      setUser(res.data)
 
-    return res.data
+      return res.data
     } catch (error) {
-      if(Array.isArray(error.response.data)) {
+      if (Array.isArray(error.response.data)) {
         return setErrors(error.response.data)
       }
 
@@ -55,21 +56,35 @@ const signin = async(data) => {
   }
 
   useEffect(() => {
-    if(Cookies.get('token')) {
-      axios.get('/profile')
-      .then(res => {
-        setUser(res.data)
-        setIsAuth(true)
-      }).catch(err => {
-        console.log(err)
-        setUser(null)
-        setIsAuth(false)
-      })
-    }
+    setLoading(true)
+    if (Cookies.get('token')) {
+      axios
+        .get('/profile')
+        .then((res) => {
+          setUser(res.data)
+          setIsAuth(true)
+        })
+        .catch((err) => {
+          console.log(err)
+          setUser(null)
+          setIsAuth(false)
+        })
+      }
+      setLoading(false)
   }, [])
 
+  useEffect(() => {
+    const clean = setTimeout(() => {
+      setErrors(null);      
+    }, 5000);
+
+    return () => clearTimeout(clean);
+  }, [errors])
+
   return (
-    <AuthContext.Provider value={{ user, isAuth, errors, signup, signin, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuth, errors, loading, signup, signin, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
